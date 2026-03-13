@@ -3,166 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forbes: Special Edition 2026</title>
+    <title>Forbes Archive 2026</title>
     <style>
         :root {
             --forbes-blue: #1c4f82;
-            --bg-gray: #f8f8f8;
-            --border-color: #e0e0e0;
+            --bg-gray: #f4f4f4;
+            --border: #ddd;
         }
 
         body {
             font-family: 'Georgia', serif;
             background-color: var(--bg-gray);
-            margin: 0;
-            padding: 0;
-            color: #111;
+            margin: 0; padding: 0; color: #111;
+            overflow-x: hidden;
         }
 
         /* Навигация */
-        nav {
-            background: #fff;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        nav.main-nav {
+            background: #000;
             display: flex;
             justify-content: center;
+            position: sticky; top: 0; z-index: 1000;
         }
 
-        nav button {
-            background: none;
-            border: none;
-            padding: 15px 20px;
-            font-family: 'Georgia', serif;
-            font-size: 1rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #666;
+        nav.main-nav button {
+            background: none; border: none; color: #fff;
+            padding: 15px 25px; cursor: pointer;
+            text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;
+            transition: 0.3s;
         }
 
-        nav button.active {
-            color: var(--forbes-blue);
-            border-bottom: 2px solid var(--forbes-blue);
-            font-weight: bold;
-        }
+        nav.main-nav button.active { background: var(--forbes-blue); }
 
         .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
+            max-width: 800px; margin: 0 auto;
+            background: #fff; min-height: 100vh;
+            padding: 20px; box-sizing: border-box;
         }
 
-        h1 {
-            text-align: center;
-            font-size: clamp(1.8rem, 5vw, 2.8rem);
-            border-bottom: 4px solid black;
-            padding-bottom: 10px;
-            margin: 20px 0 5px;
-            text-transform: uppercase;
+        h1 { text-align: center; text-transform: uppercase; border-bottom: 4px solid #000; padding-bottom: 10px; font-size: 2rem; }
+        .date { text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 30px; }
+
+        /* Элементы списка */
+        .item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; border-bottom: 1px solid var(--border);
+            cursor: pointer; transition: 0.2s;
         }
+        .item:hover { background: #f0f7ff; }
+        .item b { color: var(--forbes-blue); }
 
-        .date-update {
-            text-align: center;
-            color: #666;
-            font-size: 0.8rem;
-            margin-bottom: 30px;
-            text-transform: uppercase;
+        /* Вкладки Энциклопедии */
+        .sub-nav {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            border-bottom: 1px solid #000; padding-bottom: 10px;
         }
-
-        /* Стили списка */
-        .list-header {
-            display: grid;
-            grid-template-columns: 50px 1fr 100px;
-            padding: 10px 15px;
-            font-weight: bold;
-            border-bottom: 2px solid black;
-            font-size: 0.9rem;
-            text-transform: uppercase;
+        .sub-nav button {
+            border: 1px solid #000; background: #fff;
+            padding: 8px 15px; cursor: pointer; font-family: 'Georgia', serif;
+            flex: 1;
         }
+        .sub-nav button.active { background: #000; color: #fff; }
 
-        .milliardaire-item {
-            display: grid;
-            grid-template-columns: 50px 1fr 100px;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .milliardaire-item:hover { background-color: #f0f7ff; }
-
-        .rank { font-weight: bold; color: var(--forbes-blue); font-size: 1.2rem; }
-        .name { font-weight: bold; }
-        .net-worth { text-align: right; font-weight: bold; }
-
-        /* Секции */
-        .page { display: none; }
-        .page.active { display: block; }
-
-        /* Статьи */
-        .article-card {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .article-card h3 { color: var(--forbes-blue); margin-bottom: 5px; }
-        .article-card p { line-height: 1.6; color: #444; }
-
-        /* Карточка миллиардера (Модалка) */
+        /* --- АНИМАЦИИ МОДАЛЬНОГО ОКНА --- */
         #modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0); /* Начало: прозрачно */
+            justify-content: center; align-items: center; z-index: 2000;
+            transition: background 0.4s ease;
+            visibility: hidden;
+        }
+
+        #modal.active {
+            background: rgba(0,0,0,0.9);
+            visibility: visible;
         }
 
         .card {
-            background: white; width: 95%; max-width: 450px; max-height: 90vh;
-            overflow-y: auto; position: relative; border-top: 8px solid var(--forbes-blue);
+            background: #fff; width: 95%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto; position: relative;
+            /* Анимация: сдвиг вниз и прозрачность */
+            transform: translateY(40px);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
         }
 
-        .card-img { width: 100%; height: 250px; object-fit: cover; background: #eee; }
-        .card-content { padding: 20px; }
-        .card-content h2 { margin: 0 0 15px; font-size: 1.8rem; border-bottom: 2px solid black; }
-        .card-content p { margin: 10px 0; border-bottom: 1px dashed #eee; padding-bottom: 5px; display: flex; justify-content: space-between; }
+        #modal.active .card {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Фото: Большое и красивое */
+        .card-img {
+            width: 100%; height: 450px; 
+            object-fit: cover; 
+            display: block;
+            background: #eee;
+        }
+
+        .card-content { padding: 30px; }
+        .card-content h2 { margin: 0 0 20px; font-size: 2rem; border-bottom: 2px solid #000; }
+        .card-content p { margin: 12px 0; border-bottom: 1px dashed #ccc; padding-bottom: 8px; display: flex; justify-content: space-between; }
         .card-content b { color: var(--forbes-blue); }
 
-        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #fff; text-shadow: 0 0 5px #000; z-index: 10; }
+        .close-btn {
+            position: absolute; top: 15px; right: 20px;
+            font-size: 35px; cursor: pointer; color: #fff; z-index: 10;
+            text-shadow: 0 0 10px #000;
+        }
 
-        /* МОБИЛЬНАЯ ОПТИМИЗАЦИЯ */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Мобильная адаптация */
         @media (max-width: 600px) {
-            .container { padding: 10px; }
-            .milliardaire-item { font-size: 0.9rem; padding: 12px 5px; }
-            .card-img { height: 200px; }
+            .card-img { height: 350px; }
+            .card-content { padding: 20px; }
+            h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
 
-<nav>
-    <button id="btn-list" class="active" onclick="switchPage('list')">Список</button>
-    <button id="btn-articles" onclick="switchPage('articles')">Энциклопедия</button>
+<nav class="main-nav">
+    <button id="btn-list" class="active" onclick="switchPage('list')">Список Forbes</button>
+    <button id="btn-wiki" onclick="switchPage('wiki')">Энциклопедия</button>
 </nav>
 
 <div class="container">
     <div id="page-list" class="page active">
         <h1>Billionaires 2026</h1>
-        <div class="date-update">Updated: 13 March 2026</div>
-        
-        <div class="list-header">
-            <div>№</div><div>Имя</div><div>Состояние</div>
-        </div>
+        <div class="date">Updated: 13 March, 2026</div>
         <div id="milliardaire-list"></div>
     </div>
 
-    <div id="page-articles" class="page">
+    <div id="page-wiki" class="page">
         <h1>Энциклопедия</h1>
-        <div class="date-update">Определения и факты</div>
-        <div id="articles-container"></div>
+        <div class="sub-nav">
+            <button id="sub-btn-comp" class="active" onclick="switchSubWiki('comp')">Компании</button>
+            <button id="sub-btn-peop" onclick="switchSubWiki('peop')">Люди</button>
+        </div>
+        <div id="wiki-content"></div>
     </div>
 </div>
 
@@ -172,16 +154,13 @@
         <img id="card-photo" src="" alt="Photo" class="card-img">
         <div class="card-content">
             <h2 id="card-name"></h2>
-            <p><b>Возраст</b> <span id="card-age"></span></p>
-            <p><b>Состояние</b> <span id="card-wealth"></span></p>
-            <p><b>Источник</b> <span id="card-source"></span></p>
-            <p><b>Страна</b> <span id="card-country"></span></p>
+            <div id="card-details"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. ДАННЫЕ МИЛЛИАРДЕРОВ
+    // --- ДАННЫЕ (ЗАПОЛНЯЙ ТУТ) ---
     const billionaires = [
         { name: "Klimenkov Maxim", age: "21", wealth: "$4.0 Quadrillion", source: "Tiffany & Co., Google, Torrent, Lucky Blocks, MTS, Playerok, Brainrots", country: "Belarus", img: "Maxim.jpg" },
         { name: "Chiz Artem", age: "21", wealth: "$3.8 Quadrillion", source: "Google, Gemini, Torrent, Lucky Blocks, Standoff 3, FunPay, Brainrots", country: "Belarus", img: "Artem.jpg" },
@@ -190,57 +169,92 @@
         { name: "Jeff Bezos", age: "62", wealth: "$230 Billion", source: "Amazon", country: "USA", img: "Jeff.webp" }
     ];
 
-    // 2. ДАННЫЕ СТАТЕЙ (КОМПАНИИ И ЛЮДИ)
-    const articles = [
-        { title: "Tiffany & Co.", text: "Транснациональная корпорация, специализирующаяся на производстве специального материала Тиффани. Основана Даниленко Дарьей в 2025 году." },
+    const wikiData = {
+        comp: [
+            { title: "Tiffany & Co.", text: "Транснациональная корпорация, специализирующаяся на производстве специального материала Тиффани. Основана Даниленко Дарьей в 2025 году." },
         { title: "Torrent", text: "Специальная компьютерная утилита, использующая P2P-соединение для передачи данных. Технология придумана Чижом Артёмом, реализована им же и Клименковым Максимом в 2025 году." },
         { title: "Lucky Blocks & Brainrots", text: "Игра и одновременно торговая площадка, синхронизованная с Playerok и FunPay. Крайне увлекательна, вся молодёжь играет в неё. Разработана Клименковым Максимом и Чижом Артёмом в 2024 году." }
-    ];
+        ],
+        peop: [
+            { title: "Максим Клименков", text: "Всемирный квадриллионер, с оценкой состояния в 4.0 квадриллиона долларов. Является гендиректором и главным акционером таких компаний, как Tiffany & Co., MTS, Playerok. Многие бизнесы ведёт вместе с деловыи партнёром Чижом Артёмом." },
+            { title: "Чиж Артём", text: "Квадриллионер с оценкой состояния в 3.8 квадриллиона долларов, занявший 2 место в списке Forbes. Является основателем торрента, владельцем Gemini, Standoff 3, FunPay. Открыл множество бизнесов вместе с квадриллионером Клименковым Максимом." }
+        ]
+    };
 
-    // Отрисовка списка
-    const listDiv = document.getElementById('milliardaire-list');
-    billionaires.forEach((p, i) => {
-        listDiv.innerHTML += `
-            <div class="milliardaire-item" onclick="showCard(${i})">
-                <div class="rank">#${i+1}</div>
-                <div class="name">${p.name}</div>
-                <div class="net-worth">${p.wealth}</div>
+    // --- ЛОГИКА САЙТА ---
+
+    function renderList() {
+        const listDiv = document.getElementById('milliardaire-list');
+        listDiv.innerHTML = billionaires.map((p, i) => `
+            <div class="item" onclick="showPersonCard(${i})">
+                <span><b>#${i+1}</b> ${p.name}</span>
+                <span>${p.wealth}</span>
             </div>
-        `;
-    });
+        `).join('');
+    }
 
-    // Отрисовка статей
-    const articlesDiv = document.getElementById('articles-container');
-    articles.forEach(art => {
-        articlesDiv.innerHTML += `
-            <div class="article-card">
-                <h3>${art.title}</h3>
-                <p>${art.text}</p>
+    function renderWiki(type) {
+        const wikiDiv = document.getElementById('wiki-content');
+        wikiDiv.innerHTML = wikiData[type].map((item, i) => `
+            <div class="item" onclick="showWikiCard('${type}', ${i})">
+                <span>${item.title}</span>
+                <b>➔</b>
             </div>
-        `;
-    });
+        `).join('');
+    }
 
-    // Функции управления интерфейсом
-    function switchPage(page) {
+    function switchPage(pageId) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        
-        document.getElementById('page-' + page).classList.add('active');
-        document.getElementById('btn-' + page).classList.add('active');
+        document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        document.getElementById('btn-' + pageId).classList.add('active');
+        if(pageId === 'wiki') renderWiki('comp');
     }
 
-    function showCard(index) {
-        const p = billionaires[index];
+    function switchSubWiki(type) {
+        document.querySelectorAll('.sub-nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById('sub-btn-' + type).classList.add('active');
+        renderWiki(type);
+    }
+
+    // Анимированное открытие
+    function openModal() {
+        const m = document.getElementById('modal');
+        m.style.display = 'flex';
+        setTimeout(() => m.classList.add('active'), 10);
+    }
+
+    function showPersonCard(i) {
+        const p = billionaires[i];
+        const photo = document.getElementById('card-photo');
+        photo.style.display = 'block';
+        photo.src = p.img;
         document.getElementById('card-name').innerText = p.name;
-        document.getElementById('card-age').innerText = p.age;
-        document.getElementById('card-wealth').innerText = p.wealth;
-        document.getElementById('card-source').innerText = p.source;
-        document.getElementById('card-country').innerText = p.country;
-        document.getElementById('card-photo').src = p.img;
-        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('card-details').innerHTML = `
+            <p><b>Возраст</b> <span>${p.age}</span></p>
+            <p><b>Состояние</b> <span>${p.wealth}</span></p>
+            <p><b>Источник</b> <span>${p.source}</span></p>
+            <p><b>Страна</b> <span>${p.country}</span></p>
+        `;
+        openModal();
     }
 
-    function closeCard() { document.getElementById('modal').style.display = 'none'; }
+    function showWikiCard(type, i) {
+        const art = wikiData[type][i];
+        document.getElementById('card-photo').style.display = 'none';
+        document.getElementById('card-name').innerText = art.title;
+        document.getElementById('card-details').innerHTML = `<p style="border:none; line-height:1.6; display:block">${art.text}</p>`;
+        openModal();
+    }
+
+    function closeCard() {
+        const m = document.getElementById('modal');
+        m.classList.remove('active');
+        setTimeout(() => m.style.display = 'none', 400);
+    }
+
+    // Старт
+    renderList();
 </script>
 
 </body>
